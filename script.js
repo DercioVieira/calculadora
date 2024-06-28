@@ -1,109 +1,66 @@
-const calculator = {
-    displayValue: '0',
-    firstOperand: null,
-    waitingForSecondOperand: false,
-    operator: null,
-};
+// Seleciona todos os botões da calculadora
+const buttons = document.querySelectorAll('button');
+// Seleciona o display da calculadora
+const display = document.querySelector('.calculator-screen');
 
-function inputDigit(digit) {
-    const { displayValue, waitingForSecondOperand } = calculator;
-
-    if (waitingForSecondOperand === true) {
-        calculator.displayValue = digit;
-        calculator.waitingForSecondOperand = false;
-    } else {
-        calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
-    }
-}
-
-function inputDecimal(dot) {
-    if (calculator.waitingForSecondOperand === true) {
-        calculator.displayValue = '0.';
-        calculator.waitingForSecondOperand = false;
-        return;
-    }
-
-    if (!calculator.displayValue.includes(dot)) {
-        calculator.displayValue += dot;
-    }
-}
-
-function handleOperator(nextOperator) {
-    const { firstOperand, displayValue, operator } = calculator;
-    const inputValue = parseFloat(displayValue);
-
-    if (operator && calculator.waitingForSecondOperand)  {
-        calculator.operator = nextOperator;
-        return;
-    }
-
-    if (firstOperand == null && !isNaN(inputValue)) {
-        calculator.firstOperand = inputValue;
-    } else if (operator) {
-        const result = calculate(firstOperand, inputValue, operator);
-
-        calculator.displayValue = `${parseFloat(result.toFixed(7))}`;
-        calculator.firstOperand = result;
-    }
-
-    calculator.waitingForSecondOperand = true;
-    calculator.operator = nextOperator;
-}
-
-function calculate(firstOperand, secondOperand, operator) {
-    if (operator === '+') {
-        return firstOperand + secondOperand;
-    } else if (operator === '-') {
-        return firstOperand - secondOperand;
-    } else if (operator === '*') {
-        return firstOperand * secondOperand;
-    } else if (operator === '/') {
-        return firstOperand / secondOperand;
-    }
-
-    return secondOperand;
-}
-
-function resetCalculator() {
-    calculator.displayValue = '0';
-    calculator.firstOperand = null;
-    calculator.waitingForSecondOperand = false;
-    calculator.operator = null;
-}
-
-function updateDisplay() {
-    const display = document.querySelector('.calculator-screen');
-    display.value = calculator.displayValue;
-}
-
-updateDisplay();
-
-const keys = document.querySelector('.calculator-keys');
-keys.addEventListener('click', (event) => {
-    const { target } = event;
-
-    if (!target.matches('button')) {
-        return;
-    }
-
-    if (target.classList.contains('operator')) {
-        handleOperator(target.value);
-        updateDisplay();
-        return;
-    }
-
-    if (target.classList.contains('decimal')) {
-        inputDecimal(target.value);
-        updateDisplay();
-        return;
-    }
-
-    if (target.classList.contains('all-clear')) {
-        resetCalculator();
-        updateDisplay();
-        return;
-    }
-
-    inputDigit(target.value);
-    updateDisplay();
+// Adiciona um listener de evento a cada botão
+buttons.forEach(button => {
+    button.addEventListener('click', handleClick);
 });
+
+// Função para lidar com o clique nos botões
+function handleClick(event) {
+    const buttonValue = event.target.value;
+
+    switch(buttonValue) {
+        case '=':
+            calculate();
+            break;
+        case 'all-clear':
+            clearDisplay();
+            break;
+        case '%':
+            appendToDisplay('%');
+            break;
+        case '^2':
+            square();
+            break;
+        default:
+            appendToDisplay(buttonValue);
+    }
+}
+
+// Função para adicionar conteúdo ao display
+function appendToDisplay(value) {
+    display.value += value;
+}
+
+// Função para limpar o display
+function clearDisplay() {
+    display.value = '';
+}
+
+// Função para calcular o resultado
+function calculate() {
+    try {
+        display.value = eval(display.value);
+    } catch(error) {
+        display.value = 'Error';
+    }
+}
+
+// Função para calcular o quadrado
+function square() {
+    try {
+        const result = eval(display.value + '*' + display.value);
+        display.value = result;
+    } catch(error) {
+        display.value = 'Error';
+        setTimeout(clearScreen, 2000); // Chama a função clearScreen após 2 segundos (2000 milissegundos)
+    }
+}
+
+function clearScreen() {
+    // Função para limpar a tela
+    display.value = '';
+}
